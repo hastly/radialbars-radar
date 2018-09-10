@@ -4,9 +4,7 @@ $gridMiddleLine: #000
 $oddBgColor: #394949
 $evenBgColor: #2D2D37
 $dataColor: #B5CDD0
-$dataSelectColorA: #FFF
-$dataSelectColorB: #5B81E3
-$dataSelectColorC: #BFFC90
+$dataSelectColor: #FFF
 
 // dimensions
 $rootWidth: 577px
@@ -61,15 +59,7 @@ svg.radial-bar-chart-root
 
 	.data-bar
 		fill: $dataColor
-	.data-bar.data-bar-selectableA:hover
-			fill: $dataSelectColorA
-	.data-bar.data-bar-selectableB:hover
-			fill: $dataSelectColorB
-	.data-bar.data-bar-selectableC:hover
-			fill: $dataSelectColorC
-	.data-bar.data-bar-selectedA
-			fill: $dataSelectColorA
-	.data-bar.data-bar-selectedB
-			fill: $dataSelectColorB
-	.data-bar.data-bar-selectedC
-			fill: $dataSelectColorC
+	.data-bar.data-bar-selectable:hover
+			fill: $dataSelectColor
+	.data-bar.data-bar-selected
+			fill: $dataSelectColor

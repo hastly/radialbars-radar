@@ -11,6 +11,18 @@ import { select as d3select } from 'd3-selection'
 
 
 class RadialBarsRadarChart extends Component {
+  classNames = {
+    root: 'radial-bar-chart-root',
+    fgCircle: 'circle-grid',
+    fgCircleFifty: 'circle-grid-middle',
+    bgCircle: 'circle-grid-background',
+    radialAxis: 'radial-axis',
+    radialAxisTick: 'radial-axis-tick',
+    dataBar: 'data-bar',
+    dataBarSelected: 'data-bar-selected',
+    dataBarSelectable: 'data-bar-selectable',
+  }
+
   constructor(props){
     super(props)
     this.createBarChart = this.createChart.bind(this)
@@ -20,19 +32,7 @@ class RadialBarsRadarChart extends Component {
       extentByData: false,
       extentByDataMax: true,
       tickCount: 8,
-    }
-
-    this.classNames = {
-      root: 'radial-bar-chart-root',
-      fgCircle: 'circle-grid',
-      fgCircleFifty: 'circle-grid-middle',
-      bgCircle: 'circle-grid-background',
-      radialAxis: 'radial-axis',
-      radialAxisTick: 'radial-axis-tick',
-      dataBar: 'data-bar',
-      dataBarSelected: 'data-bar-selected',
-      dataBarSelectable: 'data-bar-selectable',
-    }
+    }  
 
     const dataExtent = d3extent(this.props.data, d => d)
     if (options.extentByDataMax) {
@@ -71,10 +71,14 @@ class RadialBarsRadarChart extends Component {
       .innerRadius(0)
       .outerRadius((d, i) => scales.fgCircles(d))
     
+    const that = this
     canvas.selectAll('path')
       .data(data)
       .enter()
       .append('path')
+      .on('click', function(d, i) {
+        that.processHighlightClicks(this, d, i)
+      })
       .classed(this.classNames.dataBar, true)
       .classed(this.classNames.dataBarSelectable, true)
       .attr('d', arc)
@@ -148,6 +152,39 @@ class RadialBarsRadarChart extends Component {
     return (index * 2 * Math.PI) / this.props.data.length
   }
 
+  processHighlightClicks(element, d, i) {
+    // shortcuts to elements and class names
+    const thisElement = d3select(element)
+    const cls = this.classNames.dataBar
+    const clsSelected = this.classNames.dataBarSelected
+    const clsSelectable = this.classNames.dataBarSelectable
+    // trigger state flag
+    const newState = !thisElement.classed(clsSelected)
+  
+    // for all data bars:
+    // - turn off previous selection
+    // - disable highlight on hover if element selected
+    d3select(element.parentNode)
+      .selectAll(`.${cls}`)
+      .classed(clsSelected, false)
+      .classed(clsSelectable, !newState)
+  
+    // trigger selection class on element
+    thisElement.classed(clsSelected, newState)
+    // disable hover highlighting for current element if state
+    // has been triggered to off-state to indicate response on 
+    // user action, or else it would be unclear for user that action
+    // was processed
+    thisElement.classed(clsSelectable, newState)
+
+    if (!newState) {
+      // turn on standard hover highlighting when leaving element
+      thisElement.on('mouseleave', function() {
+        thisElement.classed(clsSelectable, true)
+        thisElement.on('mouseleave', null)
+      })
+    }
+  }
 }
 
 
