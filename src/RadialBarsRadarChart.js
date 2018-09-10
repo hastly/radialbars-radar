@@ -7,11 +7,25 @@ import { scaleLinear } from 'd3-scale'
 import { axisRight } from 'd3-axis'
 import { arc as d3arc } from 'd3-shape'
 import { extent as d3extent } from 'd3-array'
+import { range as d3range } from 'd3-array'
+import { randomUniform } from 'd3-random'
 import { select as d3select } from 'd3-selection'
+
+function generateDataSequence() {
+  return d3range( Math.round( randomUniform(1,16)() ) )
+    .map(randomUniform(1,100))
+    .map(Math.round)
+}
 
 
 class RadialBarsRadarChart extends Component {
+  state = {
+    data: generateDataSequence(),
+    optionsSet: this.props.optionsSet || 'A',
+  }
+
   classNames = {
+    frame: 'radial-bar-chart',
     root: 'radial-bar-chart-root',
     fgCircle: 'circle-grid',
     fgCircleFifty: 'circle-grid-middle',
@@ -19,8 +33,8 @@ class RadialBarsRadarChart extends Component {
     radialAxis: 'radial-axis',
     radialAxisTick: 'radial-axis-tick',
     dataBar: 'data-bar',
-    dataBarSelected: 'data-bar-selected',
-    dataBarSelectable: 'data-bar-selectable',
+    dataBarSelectedTemplate: 'data-bar-selected',
+    dataBarSelectableTemplate: 'data-bar-selectable',
   }
 
   optionsSets = {
@@ -63,7 +77,7 @@ class RadialBarsRadarChart extends Component {
     super(props)
     this.createBarChart = this.createChart.bind(this)
     
-    this.options = this.optionsSets[this.props.optionsSet || 'A']
+    this.options = this.optionsSets[this.state.optionsSet]
     this.initFromOptions()
   }
 
@@ -72,14 +86,19 @@ class RadialBarsRadarChart extends Component {
   }
 
   componentDidUpdate() {
+    this.initFromOptions()
     this.createChart()
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    this.options = this.optionsSets[nextState.optionsSet]
   }
 
   createChart() {
     // prepare SVG canvas
     const [canvas, renderHeight] = this.renderSvgRoot()
     const scales = this.generateUsableScales(renderHeight)
-    const data = this.props.data
+    const data = this.state.data
   
     // render background grid circles with alternate color
     canvas.selectAll('circleGridBackground')
@@ -149,11 +168,39 @@ class RadialBarsRadarChart extends Component {
     }
 
   render() {
-    return <svg
-      ref={node => this.node = node}
-      className={this.classNames.root}
-      >
-      </svg>
+    return <div className={this.classNames.frame}>
+        <svg
+          ref={node => this.node = node}
+          className={this.classNames.root}
+        ></svg>
+        <div className='flex-container'>
+        <button className='flex-item' onClick={this.handleDefaultData.bind(this)}>Default Data</button>
+        <button className='flex-item' onClick={this.handleRandomData.bind(this)}>Random Data</button>
+        <select className='flex-item' onChange={this.handlePresetChange.bind(this)}>
+          <option value="A">Preset A</option>
+          <option value="B">Preset B</option>
+          <option value="C">Preset C</option>
+        </select>
+        </div>
+      </div>
+  }
+
+  handlePresetChange(ev) {
+    this.setState({
+      optionsSet: ev.target.value
+    })
+  }
+
+  handleRandomData(ev) {
+    this.setState({
+      data: generateDataSequence()
+    })
+  }
+
+  handleDefaultData(ev) {
+    this.setState({
+      data: this.props.data
+    })
   }
 
   renderSvgRoot() {
@@ -188,7 +235,7 @@ class RadialBarsRadarChart extends Component {
     const options = this.options
 
     // set data extent according to options
-    let dataExtent = d3extent(this.props.data, d => d)
+    let dataExtent = d3extent(this.state.data, d => d)
     dataExtent = options.extentByData ? dataExtent : options.extent
     // align extent by decimals
     const align = (val) => Math.round(val / 10) * 10
@@ -214,17 +261,19 @@ class RadialBarsRadarChart extends Component {
         
     //set highlight colors according to options
     const optionColors = new Set(['A', 'B', 'C'])
-    this.classNames.dataBarSelectable += optionColors.has(options.hoverColor) ? options.hoverColor : 'A'
+    const hoverColorSuffix = optionColors.has(options.hoverColor) ? options.hoverColor : 'A'
+    const selectedColorSuffix = optionColors.has(options.selectedColor) ? options.selectedColor : 'A'
+    this.classNames.dataBarSelectable = this.classNames.dataBarSelectableTemplate + hoverColorSuffix
     if (options.hoverSelectedTheSameColor) {
-      this.classNames.dataBarSelected += optionColors.has(options.hoverColor) ? options.hoverColor : 'A'
+      this.classNames.dataBarSelected = this.classNames.dataBarSelectedTemplate + hoverColorSuffix
     } else {
-      this.classNames.dataBarSelected += optionColors.has(options.selectedColor) ? options.selectedColor : 'A'
+      this.classNames.dataBarSelected = this.classNames.dataBarSelectedTemplate + selectedColorSuffix
     }
   
   }
 
   computeSectorAngle(index) {
-    return (index * 2 * Math.PI) / this.props.data.length
+    return (index * 2 * Math.PI) / this.state.data.length
   }
 
   resetBarOnDeselect(element, d, i) {
