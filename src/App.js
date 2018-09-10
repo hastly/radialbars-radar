@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 
-import BarChart from './BarChart'
+import BarChart from './RadialBarsRadarChart'
 
 
 class App extends Component {

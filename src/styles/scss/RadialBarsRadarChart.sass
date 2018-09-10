@@ -1,0 +1,24 @@
+// colors
+$gridLine: #989898
+$gridMiddleLine: #000
+$oddBgColor: #394949
+$evenBgColor: #2D2D37
+$dataColor: #B5CDD0
+$dataSelectColorA: #FFF
+$dataSelectColorB: #5B81E3
+$dataSelectColorC: #BFFC90
+
+// dimensions
+$rootWidth: 577px
+$rootHeight: 450px
+
+svg.radial-bar-chart-root
+	width: $rootWidth
+	height: $rootHeight
+
+	rect.root-background
+		width: 100%
+		height: 100%
+		fill: $oddBgColor
+	g.work-area	
+		transform: translate($rootWidth / 2, $rootHeight / 2)
