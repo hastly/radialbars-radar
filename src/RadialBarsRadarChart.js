@@ -23,22 +23,48 @@ class RadialBarsRadarChart extends Component {
     dataBarSelectable: 'data-bar-selectable',
   }
 
-  constructor(props){
-    super(props)
-    this.createBarChart = this.createChart.bind(this)
-
-    const options = this.options = {
+  optionsSets = {
+    A: {
+      extent: [12, 90],
+      extentByData: false,
+      extentByDataMax: true,
+      tickCount: 8,
+      pullOut: false,
+      carrots: 'none',
+      hoverColor: 'A',
+      selectedColor: 'B',
+      hoverSelectedTheSameColor: true,
+    },
+    B: {
       extent: [10, 90],
       extentByData: false,
       extentByDataMax: true,
       tickCount: 8,
-    }  
+      pullOut: true,
+      carrots: 'hardly',
+      hoverColor: 'C',
+      selectedColor: 'B',
+      hoverSelectedTheSameColor: false,
+    },
+    C: {
+      extent: [10, 90],
+      extentByData: true,
+      extentByDataMax: true,
+      tickCount: 8,
+      pullOut: true,
+      carrots: 'sassy',
+      hoverColor: 'B',
+      selectedColor: 'C',
+      hoverSelectedTheSameColor: false,
+    },
+  }
 
-    const dataExtent = d3extent(this.props.data, d => d)
-    if (options.extentByDataMax) {
-	    dataExtent[0] = 0	
-    }
-    this.extent = options.extentByData ? dataExtent : options.extent
+  constructor(props){
+    super(props)
+    this.createBarChart = this.createChart.bind(this)
+    
+    this.options = this.optionsSets[this.props.optionsSet || 'A']
+    this.initFromOptions()
   }
 
   componentDidMount() {
@@ -65,12 +91,22 @@ class RadialBarsRadarChart extends Component {
       .classed('even', (d, i) => !(i % 2))    
 
     // render data bars (segments)
-    const arc = d3arc()
+    this.casualArc = d3arc()
       .startAngle((d, i) => this.computeSectorAngle(i))
       .endAngle((d, i) => this.computeSectorAngle(i + 1))
       .innerRadius(0)
       .outerRadius((d, i) => scales.fgCircles(d))
+      .padAngle(this.padAngle)
+      .cornerRadius(this.cornerRadius)
     
+    this.pullOutArc = d3arc()
+      .startAngle((d, i) => this.computeSectorAngle(i))
+      .endAngle((d, i) => this.computeSectorAngle(i + 1))
+      .innerRadius(7)
+      .outerRadius((d, i) => scales.fgCircles(d) + 7)
+      .padAngle(this.padAngle + 0.02)
+      .cornerRadius(this.cornerRadius)      
+
     const that = this
     canvas.selectAll('path')
       .data(data)
@@ -81,7 +117,7 @@ class RadialBarsRadarChart extends Component {
       })
       .classed(this.classNames.dataBar, true)
       .classed(this.classNames.dataBarSelectable, true)
-      .attr('d', arc)
+      .attr('d', this.casualArc)
 
     // render foreground grid circles
     canvas.selectAll('circleGridStroke')
@@ -148,8 +184,54 @@ class RadialBarsRadarChart extends Component {
     }	
   }
 
+  initFromOptions() {
+    const options = this.options
+
+    // set data extent according to options
+    let dataExtent = d3extent(this.props.data, d => d)
+    dataExtent = options.extentByData ? dataExtent : options.extent
+    // align extent by decimals
+    const align = (val) => Math.round(val / 10) * 10
+    this.extent = [(options.extentByData && options.extentByDataMax) ? 0 : align(dataExtent[0]), align(dataExtent[1])] 
+
+    // set corners and pads according to options
+    switch (options.carrots) {
+      case 'hardly': {
+        this.padAngle = 0.03
+        this.cornerRadius = 3
+        break
+      }
+      case 'sassy': {
+        this.padAngle = 0.06
+        this.cornerRadius = 7
+        break
+      }
+      default: {
+        this.padAngle = 0
+        this.cornerRadius = 0
+      }
+    }
+        
+    //set highlight colors according to options
+    const optionColors = new Set(['A', 'B', 'C'])
+    this.classNames.dataBarSelectable += optionColors.has(options.hoverColor) ? options.hoverColor : 'A'
+    if (options.hoverSelectedTheSameColor) {
+      this.classNames.dataBarSelected += optionColors.has(options.hoverColor) ? options.hoverColor : 'A'
+    } else {
+      this.classNames.dataBarSelected += optionColors.has(options.selectedColor) ? options.selectedColor : 'A'
+    }
+  
+  }
+
   computeSectorAngle(index) {
     return (index * 2 * Math.PI) / this.props.data.length
+  }
+
+  resetBarOnDeselect(element, d, i) {
+    const iterElement = d3select(element)
+    if (iterElement.classed(this.classNames.dataBarSelected)) {
+      iterElement.attr('d', this.casualArc(d, i))
+    }	
   }
 
   processHighlightClicks(element, d, i) {
@@ -164,11 +246,17 @@ class RadialBarsRadarChart extends Component {
     // for all data bars:
     // - turn off previous selection
     // - disable highlight on hover if element selected
+    const that = this
     d3select(element.parentNode)
       .selectAll(`.${cls}`)
+      .each(function(d, i) {
+        if (that.options.pullOut) {
+          that.resetBarOnDeselect(this, d, i)
+        }
+      })
       .classed(clsSelected, false)
       .classed(clsSelectable, !newState)
-  
+
     // trigger selection class on element
     thisElement.classed(clsSelected, newState)
     // disable hover highlighting for current element if state
@@ -183,7 +271,15 @@ class RadialBarsRadarChart extends Component {
         thisElement.classed(clsSelectable, true)
         thisElement.on('mouseleave', null)
       })
-    }
+      if (this.options.pullOut) {
+        thisElement.attr('d', this.casualArc(d, i))
+      }
+    } else {
+      if (this.options.pullOut) {
+        thisElement.attr('d', this.pullOutArc(d, i))
+      }
+	}
+
   }
 }
 

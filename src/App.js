@@ -12,7 +12,7 @@ class App extends Component {
           <h2>Radial Bars Radar Chart</h2>
         </div>
         <div>
-          <BarChart data={[55, 60, 70, 47, 60, 40, 72, 60, 56, 78, 70, 72]} />
+          <BarChart data={[55, 60, 70, 47, 60, 40, 72, 60, 56, 78, 70, 72]} optionsSet={'A'}/>
         </div>
       </div>
     );
