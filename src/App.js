@@ -12,7 +12,7 @@ class App extends Component {
           <h2>Basic D3-React test</h2>
         </div>
         <div>
-          <BarChart data={[1, 3, 5, 17]} size={[500, 500]} />
+          <BarChart data={[55, 60, 70, 47, 60, 40, 72, 60, 56, 78, 70, 72]} />
         </div>
       </div>
     );

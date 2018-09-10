@@ -17,10 +17,14 @@ class RadialBarsRadarChart extends Component {
       extent: [30, 70],
       extentByData: false,
       extentByDataMax: true,
+      tickCount: 3,
     }
 
     this.classNames = {
       root: 'radial-bar-chart-root',
+      fgCircle: 'circle-grid',
+      fgCircleFifty: 'circle-grid-middle',
+      bgCircle: 'circle-grid-background',
     }
 
     const dataExtent = d3extent(this.props.data, d => d)
@@ -39,8 +43,18 @@ class RadialBarsRadarChart extends Component {
   }
 
   createChart() {
-    const [svg, renderHeight] = this.renderSvgRoot()
+    // prepare SVG canvas
+    const [canvas, renderHeight] = this.renderSvgRoot()
     const scales = this.generateUsableScales(renderHeight)
+  
+    // render background grid circles with alternate color
+    canvas.selectAll('circleGridBackground')
+      .data(scales.bgCircles.ticks(this.options.tickCount))
+      .enter()
+      .append('circle')
+      .attr('r', d => scales.bgCircles(d))
+      .attr('class', this.classNames.bgCircle)
+      .classed('even', (d, i) => !(i % 2))    
   }
 
   render() {

@@ -22,3 +22,22 @@ svg.radial-bar-chart-root
 		fill: $oddBgColor
 	g.work-area	
 		transform: translate($rootWidth / 2, $rootHeight / 2)
+
+	.circle-grid
+		fill: none
+		stroke: $gridLine
+		stroke-dasharray: none
+		stroke-width: .5px
+		pointer-events: none
+
+	.circle-grid-middle
+		stroke: $gridMiddleLine
+		stroke-dasharray: 2, 2
+		stroke-width: 1.5px
+	
+	.circle-grid-background
+		fill: $oddBgColor
+		stroke: none
+	
+	.circle-grid-background.even
+		fill: $evenBgColor
