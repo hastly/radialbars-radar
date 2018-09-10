@@ -5,6 +5,7 @@ import './styles/css/RadialBarsRadarChart.css'
 
 import { scaleLinear } from 'd3-scale'
 import { axisRight } from 'd3-axis'
+import { arc as d3arc } from 'd3-shape'
 import { extent as d3extent } from 'd3-array'
 import { select as d3select } from 'd3-selection'
 
@@ -28,6 +29,9 @@ class RadialBarsRadarChart extends Component {
       bgCircle: 'circle-grid-background',
       radialAxis: 'radial-axis',
       radialAxisTick: 'radial-axis-tick',
+      dataBar: 'data-bar',
+      dataBarSelected: 'data-bar-selected',
+      dataBarSelectable: 'data-bar-selectable',
     }
 
     const dataExtent = d3extent(this.props.data, d => d)
@@ -59,6 +63,21 @@ class RadialBarsRadarChart extends Component {
       .attr('r', d => scales.bgCircles(d))
       .attr('class', this.classNames.bgCircle)
       .classed('even', (d, i) => !(i % 2))    
+
+    // render data bars (segments)
+    const arc = d3arc()
+      .startAngle((d, i) => this.computeSectorAngle(i))
+      .endAngle((d, i) => this.computeSectorAngle(i + 1))
+      .innerRadius(0)
+      .outerRadius((d, i) => scales.fgCircles(d))
+    
+    canvas.selectAll('path')
+      .data(data)
+      .enter()
+      .append('path')
+      .classed(this.classNames.dataBar, true)
+      .classed(this.classNames.dataBarSelectable, true)
+      .attr('d', arc)
 
     // render foreground grid circles
     canvas.selectAll('circleGridStroke')
@@ -124,6 +143,11 @@ class RadialBarsRadarChart extends Component {
       axisTicks: genericScale().range([0, -renderHeight]),
     }	
   }
+
+  computeSectorAngle(index) {
+    return (index * 2 * Math.PI) / this.props.data.length
+  }
+
 }
 
 
