@@ -41,3 +41,20 @@ svg.radial-bar-chart-root
 	
 	.circle-grid-background.even
 		fill: $evenBgColor
+
+	.radial-axis
+		stroke: $gridLine
+		stroke-width: .5px
+
+	.radial-axis-tick
+		font: 10px sans-serif
+		pointer-events: none
+		path, line
+			display: none
+		text
+			fill: white
+			text-anchor: middle
+			transform: translate(-4px, 0)
+
+	.axis.radial
+		shape-rendering: crispEdges

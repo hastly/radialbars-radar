@@ -9,7 +9,7 @@ class App extends Component {
     return (
       <div className="App">
         <div className="App-header">
-          <h2>Basic D3-React test</h2>
+          <h2>Radial Bars Radar Chart</h2>
         </div>
         <div>
           <BarChart data={[55, 60, 70, 47, 60, 40, 72, 60, 56, 78, 70, 72]} />
