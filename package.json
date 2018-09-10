@@ -15,9 +15,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "node-sass src/components/ -ro src/prebuild/ && react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "sass": "node-sass src/styles/scss/ -wo src/styles/css"
+    "sass": "node-sass src/components/ -wro src/prebuild/"
+  },
+  "devDependencies": {
+    "node-sass": "^4.9.3"
   }
 }

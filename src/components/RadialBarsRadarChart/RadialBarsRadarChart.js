@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
 
-import './styles/css/RadialBarsRadarChart.css'
+import '../../prebuild/RadialBarsRadarChart/styles/scss/RadialBarsRadarChart.css'
 
 import { scaleLinear } from 'd3-scale'
 import { axisRight } from 'd3-axis'
